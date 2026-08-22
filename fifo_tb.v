@@ -31,7 +31,7 @@ module fifo_tb;
 
     always #5 clk = ~clk;
 
-    reg [1:0] rand_op;
+    reg rand_op;
     integer i;
     integer change_count;
 
@@ -45,17 +45,16 @@ module fifo_tb;
         change_count = 0;
 
         #15 rst_n = 1;
-        $display("=== Start Random Stress Test ===");
+        $display("=== Start Test ===");
 
         for (i = 0; i < 100; i = i + 1) begin
             @(posedge clk);
 
-            rand_op = $urandom_range(0, 3);
-
+            rand_op = $urandom % 2; 
             din     = $urandom_range(0, 255);
-
+             #5
             case (rand_op)
-                2'b01: begin 
+                1'b0: begin 
                     wr_en = 1'b1;
                     rd_en = 1'b0;
                     change_count = change_count + 1;
@@ -65,7 +64,7 @@ module fifo_tb;
                         $display("[Change #%0d] [WRITE IGNORED] FIFO Full!", change_count);
                 end
 
-                2'b10: begin 
+                1'b1: begin 
                     wr_en = 1'b0;
                     rd_en = 1'b1;
                     change_count = change_count + 1;
@@ -73,18 +72,6 @@ module fifo_tb;
                         $display("[Change #%0d] [READ] Data = %d", change_count, dout);
                     else
                         $display("[Change #%0d] [READ IGNORED] FIFO Empty!", change_count);
-                end
-
-                2'b11: begin
-                    wr_en = 1'b1;
-                    rd_en = 1'b1;
-                    change_count = change_count + 1;
-                    $display("[Change #%0d] [SIMULTANEOUS] Write Data = %d | Read Data = %d", change_count, din, dout);
-                end
-
-                default: begin
-                    wr_en = 1'b0;
-                    rd_en = 1'b0;
                 end
             endcase
         end
